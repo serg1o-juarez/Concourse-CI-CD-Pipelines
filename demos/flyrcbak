@@ -1,0 +1,7 @@
+targets:
+  demo:
+    api: http://localhost:8080
+    team: main
+    token:
+      type: bearer
+      value: o8cTZu4ShxyShsKB/zM5MQcM/yycDo5kAAAAAA

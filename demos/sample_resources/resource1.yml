@@ -1,0 +1,33 @@
+---
+resource_types:
+- name: git
+  type: docker-image
+  source:
+    repository: concourse/git-resource
+    tag: latest
+
+resources:
+- name: my-git-repo
+  type: git
+  source:
+    uri: https://github.com/my-user/my-repo.git
+    branch: master
+    private_key: ((git-private-key))
+
+jobs:
+- name: my-job
+  plan:
+  - get: my-git-repo
+    trigger: true
+  - task: my-task
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: ubuntu
+          tag: latest
+      inputs:
+      - name: my-git-repo
+      run:
+        path: my-script.sh

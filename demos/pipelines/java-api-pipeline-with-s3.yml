@@ -1,0 +1,107 @@
+---
+resources:
+- name: java-api-source-code
+  type: git
+  source:
+   uri: https://github.com/georgesmith2017/greetings-microservice-repo.git
+   branch: master
+- name: s3-java-artifacts-gs
+  type: s3
+  source:
+    bucket: java-war-files-bucket-gs
+    region_name: us-east-1
+    access_key_id: ((access-key))
+    secret_access_key: ((secret-key))
+    versioned_file: GreetingsService-1.0.0-SNAPSHOT.war
+
+jobs:
+ - name: compile-app
+   plan:
+   - get: java-api-source-code
+     trigger: true
+   - task: task1
+     config:
+       platform: linux
+       image_resource:
+         type: registry-image
+         source:
+           repository: maven
+           tag: latest
+       inputs:
+       - name: java-api-source-code
+       run:
+           path: sh
+           args:
+           - -exec
+           - |
+             pwd
+             echo "Current dir: $(pwd)"
+             echo "Contents of current dir: $(ls -al)"
+             echo "Checking output folder: "
+             touch output-folder/testfile.txt
+             echo "Some test file content" >> output-folder/testfile.txt
+             ls -al output-folder
+             cd java-api-source-code
+             ls -l
+             mvn clean prepare-package war:war
+             cd ..
+             cp java-api-source-code/target/GreetingsService-1.0.0-SNAPSHOT.war output-folder
+             ls -l output-folder
+       outputs:
+       - name: output-folder
+   - task: task2
+     config:
+       platform: linux
+       image_resource:
+         type: registry-image
+         source:
+           repository: maven
+           tag: latest
+       inputs:
+       - name: output-folder
+       run:
+         path: sh
+         args:
+         - -exec
+         - |
+           echo "Checking contents of output-folder from task1"
+           ls -al output-folder
+           cat output-folder/testfile.txt
+   - put: s3-java-artifacts-gs
+     params:
+      file: output-folder/GreetingsService-1.0.0-SNAPSHOT.war
+
+ - name: artifactory-checker
+   plan:
+   - get: s3-java-artifacts-gs
+     passed: [compile-app]
+     trigger: true
+   - task: grab-war-file
+     config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source:
+          repository: ubuntu
+      inputs:
+      - name: s3-java-artifacts-gs
+      run:
+        path: find
+        args: [.]
+
+# fly -t demo set-pipeline -c java-api-pipeline.yml -p java-api-pipeline
+# See the pipeline in the UI:
+# http://localhost:8080/teams/main/pipelines/java-api-pipeline-with-s3
+# Unpause pipeline:
+# fly -t demo unpause-pipeline -p java-api-pipeline-with-s3
+# Clear cache:
+# fly -t <target> clear-resource-cache -r <pipeline>/<resource>
+# Sample:
+# fly -t demo clear-resource-cache -r java-api-pipeline/java-api-source-code
+    # access_key_id: ((s3-access-key-id))
+    # secret_access_key: ((s3-secret-access-key))
+    # bucket: java-war-files-bucket-gs
+# fly -t demo set-pipeline -c java-api-pipeline-with-s3.yml -p java-api-pipeline-with-s3 \
+# -v access-key=AKIATPLNME26ETBYLS33 -v secret-key=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
+# fly -t demo set-pipeline -c java-api-pipeline-with-s3.yml -p java-api-pipeline-with-s3 \
+# --load-vars-from s3-creds.yml

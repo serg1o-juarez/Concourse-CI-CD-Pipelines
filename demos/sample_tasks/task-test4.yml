@@ -1,0 +1,16 @@
+ # - name: inspect-app
+ #   plan:
+ #   - get: java-api-source-code
+ #     passed: [compile-app]
+ #     trigger: true
+ #   - task: first-task
+ #     config:
+ #       platform: linux
+ #       image_resource:
+ #         type: registry-image
+ #         source: {repository: ubuntu}
+ #       inputs:
+ #       - name: java-api-source-code
+ #       run:
+ #           path: find
+ #           args: [.]

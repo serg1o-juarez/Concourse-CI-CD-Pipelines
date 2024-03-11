@@ -1,0 +1,12 @@
+[Unit]
+Description=Concourse CI web process (ATC and TSA)
+After=postgresql.service
+
+[Service]
+User=postgres
+Restart=on-failure
+EnvironmentFile=/etc/concourse/web_env
+ExecStart=/usr/local/bin/concourseci web
+
+[Install]
+WantedBy=multi-user.target

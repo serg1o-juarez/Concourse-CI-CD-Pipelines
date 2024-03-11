@@ -1,0 +1,22 @@
+---
+resources:
+- name: java-api-source-code
+  type: git
+  source:
+    uri: https://github.com/georgesmith2017/greetings-microservice-repo.git
+    branch: master
+    
+jobs:
+- name: job
+  public: true
+  plan:
+  - get: java-api-source-code
+  - task: simple-task
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: { repository: maven }
+      run:
+        path: ls
+        args: [-l]

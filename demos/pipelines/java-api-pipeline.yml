@@ -1,0 +1,85 @@
+---
+resources:
+- name: java-api-source-code
+  type: git
+  source:
+   uri: https://github.com/georgesmith2017/greetings-microservice-repo.git
+   branch: master
+  
+jobs:
+ - name: compile-app
+   plan:
+   - get: java-api-source-code
+     trigger: true
+   - task: task1
+     config:
+       platform: linux
+       image_resource:
+         type: registry-image
+         source:
+           repository: maven
+           tag: latest
+       inputs:
+       - name: java-api-source-code
+       run:
+           path: sh
+           args:
+           - -exec
+           - |
+             pwd
+             echo "Current dir: $(pwd)"
+             echo "Contents of current dir: $(ls -al)"
+             echo "Checking output folder: "
+             touch output-folder/testfile.txt
+             echo "Some test file content" >> output-folder/testfile.txt
+             ls -al output-folder
+             cd java-api-source-code
+             ls -l
+             mvn clean prepare-package war:war
+             cd ..
+             cp java-api-source-code/target/GreetingsService-1.0.0-SNAPSHOT.war output-folder
+             ls -l output-folder
+       outputs:
+       - name: output-folder
+   - task: task2
+     config:
+       platform: linux
+       image_resource:
+         type: registry-image
+         source:
+           repository: maven
+           tag: latest
+       inputs:
+       - name: output-folder
+       run:
+         path: sh
+         args:
+         - -exec
+         - |
+           echo "Checking contents of output-folder from task1"
+           ls -al output-folder
+           cat output-folder/testfile.txt
+
+ # - name: inspect-app
+ #   plan:
+ #   - get: java-api-source-code
+ #     passed: [compile-app]
+ #     trigger: true
+ #   - task: first-task
+ #     config:
+ #       platform: linux
+ #       image_resource:
+ #         type: registry-image
+ #         source: {repository: ubuntu}
+ #       inputs:
+ #       - name: java-api-source-code
+ #       run:
+ #           path: find
+ #           args: [.]
+
+
+# fly -t demo set-pipeline -c java-api-pipeline.yml -p java-api-pipeline
+# Clear cache:
+# fly -t <target> clear-resource-cache -r <pipeline>/<resource>
+# Sample:
+# fly -t demo clear-resource-cache -r java-api-pipeline/java-api-source-code

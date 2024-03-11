@@ -1,0 +1,32 @@
+---
+resource_types:
+- name: s3
+  type: docker-image
+  source:
+    repository: concourse/s3-resource-simple
+    tag: latest
+
+resources:
+- name: my-s3-bucket
+  type: s3
+  source:
+    bucket: my-bucket
+    access_key_id: ((s3-access-key-id))
+    secret_access_key: ((s3-secret-access-key))
+
+jobs:
+- name: my-job
+  plan:
+  - get: my-s3-bucket
+    trigger: true
+  - task: my-task
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: ubuntu
+      inputs:
+      - name: my-s3-bucket
+      run:
+        path: my-script.sh

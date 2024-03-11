@@ -1,0 +1,19 @@
+---
+platform: linux
+
+image_resource:
+  type: registry-image
+  source:
+    repository: maven
+    tag: latest
+
+inputs:
+- name: scripts
+
+run:
+  path: sh
+  args:
+  - -exec
+  - |
+    scripts/script1.sh
+    scripts/script2.sh

@@ -1,0 +1,17 @@
+# Security keys
+CONCOURSE_SESSION_SIGNING_KEY=/etc/concourse/session_signing_key
+CONCOURSE_TSA_HOST_KEY=/etc/concourse/tsa_host_key
+CONCOURSE_TSA_AUTHORIZED_KEYS=/etc/concourse/authorized_worker_keys
+CONCOURSE_POSTGRES_SOCKET=/var/run/postgresql
+
+# Basic Auth credentials - see docs on Cocnourse CI API
+CONCOURSE_BASIC_AUTH_USERNAME=devops1
+CONCOURSE_BASIC_AUTH_PASSWORD=t3stpwd
+
+# Local user credentials - use when logging via the UI
+CONCOURSE_ADD_LOCAL_USER=mainteam1:test123
+CONCOURSE_MAIN_TEAM_LOCAL_USER=mainteam1
+
+# External URL - localhost, or load balancer when web notes is clustered
+CONCOURSE_EXTERNAL_URL=http://127.0.0.1:8080
+# CONCOURSE_EXTERNAL_URL=http://server_IP:8080

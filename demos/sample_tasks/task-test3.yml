@@ -1,0 +1,18 @@
+---
+platform: linux
+image_resource:
+  type: registry-image
+  source:
+    repository: maven
+    tag: latest
+
+inputs:
+- name: sample_tasks
+  path: task_inputs
+
+outputs:
+- name: output-folder
+
+run:
+  path: find
+  args: [.]
